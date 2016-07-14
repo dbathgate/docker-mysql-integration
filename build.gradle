@@ -32,6 +32,7 @@ test {
 
 
 dcompose {
+    dockerClientConfig = {
       withDockerTlsVerify 'false'
     }
     mysql {
