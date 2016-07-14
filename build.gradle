@@ -32,13 +32,11 @@ test {
 
 
 dcompose {
-    dockerClientConfig = {
-//      withDockerHost 'tcp://192.168.33.10:2375'
       withDockerTlsVerify 'false'
     }
     mysql {
         image = 'mysql:latest'
-        portBindings = ['3306:3306']
+        portBindings = ['3306']
         env = ['MYSQL_ROOT_PASSWORD=123456', 'MYSQL_USER=docker_it', 'MYSQL_PASSWORD=123456', 'MYSQL_DATABASE=docker_it']
     }
 }
