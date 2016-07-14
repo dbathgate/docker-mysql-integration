@@ -1,0 +1,58 @@
+apply plugin: 'java'
+apply plugin: "com.chrisgahlert.gradle-dcompose-plugin"
+
+repositories {
+    jcenter()
+}
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.chrisgahlert:gradle-dcompose-plugin:0.3.2"
+    }
+}
+ 
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'mysql:mysql-connector-java:6.0.3'
+    compile 'org.flywaydb:flyway-core:4.0.3'
+    compile 'ch.qos.logback:logback-classic:1.1.7'
+
+    testCompile 'junit:junit:4.12'
+}
+
+test {
+    exclude '**/*IT.*'
+}
+
+
+dcompose {
+    dockerClientConfig = {
+//      withDockerHost 'tcp://192.168.33.10:2375'
+      withDockerTlsVerify 'false'
+    }
+    mysql {
+        image = 'mysql:latest'
+        portBindings = ['3306:3306']
+        env = ['MYSQL_ROOT_PASSWORD=123456', 'MYSQL_USER=docker_it', 'MYSQL_PASSWORD=123456', 'MYSQL_DATABASE=docker_it']
+    }
+}
+
+task integrationTest(type: Test) {
+    dependsOn startMysqlContainer
+    finalizedBy removeMysqlContainer
+
+    include '**/*IT.*'
+
+    doFirst {
+        sleep 20000
+
+        systemProperty 'mysql.port', dcompose.mysql.findHostPort(3306)
+        systemProperty 'mysql.host', dcompose.mysql.dockerHost
+    }
+}
